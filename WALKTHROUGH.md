@@ -288,12 +288,6 @@ Continuing with what we've got:
   // ...
 </script>
 
-<style>
-  main {
-    font-family: "Lato", sans-serif;
-  }
-</style>
-
 <main>
 	<Form {name} let:store let:multi>
     <Step name="Customer Info" {multi}>
@@ -380,39 +374,6 @@ Continuing with what we've got:
   });
 </script>
 
-<style scoped>
-  .wrapper {
-    margin: 0 auto;
-    padding: 0.5rem;
-    width: 70%;
-    border-radius: 0.5rem;
-    border: 1px solid;
-  }
-
-  .controls {
-    margin-top: 1rem;
-    display: flex;
-  }
-
-  button {
-    margin: 0 0.25rem;
-    width: calc(50% - 0.25rem);
-  }
-
-  button:first-child {
-    margin-left: 0;
-  }
-
-  button:last-child {
-    margin-right: 0;
-  }
-
-  input {
-    margin-left: 0.25rem;
-    width: calc(50% - 0.25rem);
-  }
-</style>
-
 <div class="wrapper">
   <form {...$$restProps} class="form">
     <slot {store} {multi} />
@@ -455,17 +416,6 @@ Continuing with what we've got:
   multi.subscribe(v => (visible = v[name]));
 </script>
 
-<style scoped>
-  h2 {
-    width: 100%;
-  }
-
-  div {
-    display: flex;
-    flex-flow: row wrap;
-  }
-</style>
-
 {#if visible}
   <div>
     <h2>{name}</h2>
@@ -473,37 +423,6 @@ Continuing with what we've got:
     <slot />
   </div>
 {/if}
-```
-
-### `Input.svelte`
-```html
-<script lang="ts">
-  // ...
-</script>
-
-<style scoped>
-  label {
-    margin: 0.25rem;
-    max-width: calc(50% - 0.25rem);
-    flex: 1 0 50%;
-  }
-
-  label:nth-child(even) {
-    margin-left: 0;
-  }
-
-  label:nth-child(odd) {
-    margin-right: 0;
-  }
-
-  input {
-    margin: 0.25rem 0 0 0;
-    padding: 0.25rem;
-    width: calc(100% - 0.75rem);
-  }
-</style>
-
-<!-- -->
 ```
 
 We have changed the `Form` component to manage the steps, like it manages its store. This means we have to pass another slot variable, `multi`, to the form's children, but this time the children consist of a new component. The `multi` variable is just a regular writable store with an object that will be a key with a boolean value to represent which step is the current. Once the `Form` component is mounted, we make the first step visisble.
