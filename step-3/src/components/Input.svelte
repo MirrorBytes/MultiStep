@@ -1,7 +1,9 @@
 <script lang="ts">
   import type { Writable } from "svelte/store";
 
-  export let store: Writable<any>;
+  import type { JsonString } from "../types";
+
+  export let store: Writable<JsonString>;
   export let name: string;
   export let onInput: ((e: Event) => any) | null = null;
 

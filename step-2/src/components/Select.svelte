@@ -1,7 +1,9 @@
 <script lang="ts">
   import type { Writable } from "svelte/store";
 
-  export let store: Writable<any>;
+  import type { JsonString } from "../types";
+
+  export let store: Writable<JsonString>;
   export let name: string;
   export let onChange: ((e: FocusEvent) => any) | null = null;
 
@@ -16,7 +18,7 @@
       return v;
     });
 
-    if(onChange) {
+    if (onChange) {
       onChange(e);
     }
   };

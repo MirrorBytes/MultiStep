@@ -1,10 +1,10 @@
 <script lang="ts">
   import type { Writable } from "svelte/store";
 
-  import type { JsonValue } from "../types";
+  import type { JsonBool } from "../types";
 
   export let name: string;
-  export let multi: Writable<JsonValue>;
+  export let multi: Writable<JsonBool>;
 
   multi.update(v => {
     v[name] = false;

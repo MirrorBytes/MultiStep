@@ -1,6 +1,8 @@
 import { writable, get } from "svelte/store";
 
-export function local<T>(key: string, initial: T) {
+import type { JsonValue } from "./types"
+
+export function local<T extends JsonValue>(key: string, initial: T) {
   const toString = (value: T) => JSON.stringify(value, null, 2); // helper function
   const toObj = JSON.parse; // helper function
 

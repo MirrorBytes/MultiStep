@@ -4,17 +4,24 @@
   import type { Writable } from "svelte/store";
 
   import { local } from "../localStore";
-  import type { JsonValue } from "../types";
+  import type { JsonString, JsonBool } from "../types";
 
   export let name: string;
+  export let onSubmit: ((e: Event, store: Writable<JsonString>) => any) | null = null;
 
-  const store = name !== undefined ? local(name, {}) : writable({});
-  const multi: Writable<JsonValue> = writable({});
+  const store = name !== undefined ? local<JsonString>(name, {}) : writable({});
+  const multi: Writable<JsonBool> = writable({});
 
-  let multi_loc: JsonValue = {};
+  let multi_loc: JsonBool = {};
   let current = 0;
 
   multi.subscribe(v => (multi_loc = v));
+
+  const ourSubmit = (e: Event) => {
+    if (onSubmit) {
+      onSubmit(e, store);
+    }
+  };
 
   function prev() {
     if (Object.keys(multi_loc)[current - 1]) {
@@ -61,22 +68,20 @@
   });
 </script>
 
-<div class="wrapper">
-  <form {...$$restProps} class="form">
-    <slot {store} {multi} />
+<form on:submit={ourSubmit} {...$$restProps}>
+  <slot {store} {multi} />
 
-    <div class="controls">
-      {#if Object.keys(multi_loc)[current - 1]}
-        <button on:click|preventDefault={prev}>Prev</button>
-      {/if}
+  <div class="controls">
+    {#if Object.keys(multi_loc)[current - 1]}
+      <button on:click|preventDefault={prev}>Prev</button>
+    {/if}
 
-      {#if Object.keys(multi_loc)[current + 1]}
-        <button on:click|preventDefault={next}>Next</button>
-      {/if}
+    {#if Object.keys(multi_loc)[current + 1]}
+      <button on:click|preventDefault={next}>Next</button>
+    {/if}
 
-      {#if !Object.keys(multi_loc)[current + 1]}
-        <input type="submit" placeholder="Submit" />
-      {/if}
-    </div>
-  </form>
-</div>
+    {#if !Object.keys(multi_loc)[current + 1]}
+      <input type="submit" placeholder="Submit" />
+    {/if}
+  </div>
+</form>
