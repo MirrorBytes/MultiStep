@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from "svelte";
+  import { createEventDispatcher, onMount } from "svelte";
   import { writable } from "svelte/store";
   import type { Writable } from "svelte/store";
 
@@ -7,7 +7,8 @@
   import type { JsonString, JsonBool } from "../types";
 
   export let name: string;
-  export let onSubmit: ((e: Event, store: Writable<JsonString>) => any) | null = null;
+
+  const dispatch = createEventDispatcher();
 
   const store = name !== undefined ? local<JsonString>(name, {}) : writable({});
   const multi: Writable<JsonBool> = writable({});
@@ -17,11 +18,7 @@
 
   multi.subscribe(v => (multi_loc = v));
 
-  const ourSubmit = (e: Event) => {
-    if (onSubmit) {
-      onSubmit(e, store);
-    }
-  };
+  const onSubmit = (e: Event) => dispatch("submit", { e, store });
 
   function prev() {
     if (Object.keys(multi_loc)[current - 1]) {
@@ -68,7 +65,7 @@
   });
 </script>
 
-<form on:submit={ourSubmit} {...$$restProps}>
+<form on:submit={onSubmit} {...$$restProps}>
   <slot {store} {multi} />
 
   <div class="controls">

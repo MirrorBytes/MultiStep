@@ -1,23 +1,20 @@
 <script lang="ts">
+  import { createEventDispatcher } from "svelte";
   import { writable } from "svelte/store";
-  import type { Writable } from "svelte/store";
 
   import { local } from "../localStore";
   import type { JsonString } from "../types";
 
   export let name: string;
-  export let onSubmit: ((e: Event, store: Writable<JsonString>) => any) | null = null;
+
+  const dispatch = createEventDispatcher();
 
   const store = name !== undefined ? local<JsonString>(name, {}) : writable({});
 
-  const ourSubmit = (e: Event) => {
-    if (onSubmit) {
-      onSubmit(e, store);
-    }
-  };
+  const onSubmit = (e: Event) => dispatch("submit", { e, store });
 </script>
 
-<form on:submit={ourSubmit} {...$$restProps}>
+<form on:submit={onSubmit} {...$$restProps}>
 	<slot {store} />
 
 	<br />
