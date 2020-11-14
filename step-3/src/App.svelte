@@ -9,12 +9,6 @@
   const name = "order";
 </script>
 
-<style>
-  main {
-    font-family: "Lato", sans-serif;
-  }
-</style>
-
 <main>
 	<Form {name} let:store let:multi>
     <Step name="Customer Info" {multi}>

@@ -22,19 +22,6 @@
   };
 </script>
 
-<style>
-  label {
-    margin: 0.25rem;
-    position: relative;
-  }
-
-  select {
-    padding: 0.25rem;
-    bottom: 0;
-    position: absolute;
-  }
-</style>
-
 <label>
   <select bind:value on:blur={ourChange} {name} {...$$restProps}>
     <slot />

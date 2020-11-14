@@ -61,39 +61,6 @@
   });
 </script>
 
-<style scoped>
-  .wrapper {
-    margin: 0 auto;
-    padding: 0.5rem;
-    width: 70%;
-    border-radius: 0.5rem;
-    border: 1px solid;
-  }
-
-  .controls {
-    margin-top: 1rem;
-    display: flex;
-  }
-
-  button {
-    margin: 0 0.25rem;
-    width: calc(50% - 0.25rem);
-  }
-
-  button:first-child {
-    margin-left: 0;
-  }
-
-  button:last-child {
-    margin-right: 0;
-  }
-
-  input {
-    margin-left: 0.25rem;
-    width: calc(50% - 0.25rem);
-  }
-</style>
-
 <div class="wrapper">
   <form {...$$restProps} class="form">
     <slot {store} {multi} />

@@ -17,17 +17,6 @@
   multi.subscribe(v => (visible = v[name]));
 </script>
 
-<style scoped>
-  h2 {
-    width: 100%;
-  }
-
-  div {
-    display: flex;
-    flex-flow: row wrap;
-  }
-</style>
-
 {#if visible}
   <div>
     <h2>{name}</h2>

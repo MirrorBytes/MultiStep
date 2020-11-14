@@ -14,7 +14,7 @@ export default {
     sourcemap: true,
     format: "esm",
     name: "app",
-    file: "public/bundle.js"
+    file: "public/build/bundle.js"
   },
   plugins: [
     svelte({

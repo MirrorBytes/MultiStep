@@ -6,7 +6,7 @@ I have been working on a project the last few months that has required the exten
 
 I will show you the steps I took to create generic forms, then the ones I took to create multi-step forms, and finally the ones I took to create multi-page forms.
 
-Here's the Github repo: 
+Here's the Github repo: https://github.com/MirrorBytes/MultiStep
 
 ## Step 1: Generic Single Step Form
 
@@ -271,115 +271,6 @@ We have a basic Svelte setup. We have a generic Svelte `index.js`, and an `App.s
 The `Form` component takes a name prop, and it returns a store (via slot variable) to be used by its children. This is to isolate with varying amount of forms in a project as each will need a different name for localStorage purposes. To bypass localStorage, just don't provide a name and it will create a writable store.
 
 The `Input` and `Select` components take three managed props, and the remaining props that their respective elements take (thank you $$restProps). The three props we want control of are: `store`, `name`, and `onInput/onChange`. The `store` prop is the `store` slot variable provided by the `Form` component. We steal `name` to use it in a custom input listener in order to preserve the value in our store. Finally, the `onInput/onChange` prop is to accomodate other potential (mostly visual) changes.
-
-## Step 2.1: That is still the same level of ugly though, and that should change:
-
-### `App.svelte`
-```html
-<script lang="ts">
-  // ...
-</script>
-
-<style>
-  main {
-    font-family: "Lato", sans-serif;
-  }
-
-  h2 {
-    width: 100%;
-  }
-</style>
-
-<main>
-  <!-- -->
-</main>
-```
-
-### `Form.svelte`
-```html
-<script lang="ts">
-  // ...
-</script>
-
-<style scoped>
-  .form {
-    margin: 0 auto;
-    padding: 0.5rem;
-    width: 70%;
-    position: relative;
-    display: flex;
-    flex-flow: row wrap;
-    border-radius: 0.5rem;
-    border: 1px solid;
-  }
-
-  .submit {
-    margin-top: 1rem;
-    width: 100%;
-  }
-</style>
-
-<form {...$$restProps} class="form">
-  <slot {store} />
-
-  <input type="submit" class="submit" placeholder="Submit" />
-</form>
-```
-
-### `Input.svelte`
-```html
-<script lang="ts">
-  // ...
-</script>
-
-<style scoped>
-  label {
-    margin: 0.25rem;
-    max-width: calc(50% - 0.5rem);
-    flex: 1 0 50%;
-  }
-
-  input {
-    margin-top: 0.25rem;
-    padding: 0.25rem;
-    width: calc(100% - 0.75rem);
-  }
-</style>
-
-<label>
-  <div>{$$restProps.placeholder}</div>
-
-  <input bind:value on:input={ourInput} {name} {...$$restProps} />
-</label>
-```
-
-### `Select.svelte`
-```html
-<script lang="ts">
-  // ...
-</script>
-
-<style>
-  label {
-    margin: 0.25rem;
-    position: relative;
-  }
-
-  select {
-    padding: 0.25rem;
-    bottom: 0;
-    position: absolute;
-  }
-</style>
-
-<label>
-  <select bind:value on:blur={ourChange} {name} {...$$restProps}>
-    <slot />
-  </select>
-</label>
-```
-
-Boom, generic less ugly (sort of) form with state management.
 
 Time for the multi-step... step.
 
