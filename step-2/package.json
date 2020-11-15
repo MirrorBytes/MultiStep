@@ -6,6 +6,11 @@
     "@rollup/plugin-commonjs": "^16.0.0",
     "@rollup/plugin-node-resolve": "^10.0.0",
     "@rollup/plugin-typescript": "^6.1.0",
+    "@typescript-eslint/eslint-plugin": "^4.7.0",
+    "@typescript-eslint/parser": "^4.7.0",
+    "eslint": "^7.13.0",
+    "eslint-plugin-svelte3": "file:./eslint-plugin-svelte3",
+    "eslint-svelte3-preprocess": "^0.0.4",
     "npm-run-all": "^4.1.5",
     "rollup": "^2.33.1",
     "rollup-plugin-svelte": "^6.1.1",
@@ -19,9 +24,11 @@
     "svelte": "3.29.7"
   },
   "scripts": {
+    "preinstall": "npx degit NicoCevallos/eslint-plugin-svelte3#preprocess eslint-plugin-svelte3 --force && cd eslint-plugin-svelte3 && npm i && npm run build && rm -rf node_modules",
+    "lint": "eslint --ext .cjs,.js,.ts,.json,.svelte .",
     "build": "rollup -c",
     "autobuild": "rollup -cw",
-    "dev": "run-p start:dev autobuild",
+    "dev": "yarn lint && run-p start:dev autobuild",
     "start": "sirv public",
     "start:dev": "sirv public --dev"
   }

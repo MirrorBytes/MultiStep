@@ -1,12 +1,15 @@
 # Multi-step forms w/ Svelte
 
+## Setup
+
+- Svelte v3.29.7
+- TypeScript v^4.0.5
+
 ## Introduction
 
 I have been working on a project the last few months that has required the extensive creation of forms, and have been using a similar method to this to break them down. Multi-step forms allow for greater user interactivity as well as a smoother UX.
 
 I will show you the steps I took to create generic forms, then the ones I took to create multi-step forms, and finally the ones I took to create multi-page forms.
-
-Here's the Github repo: https://github.com/MirrorBytes/MultiStep
 
 ## Step 1: Generic Single Step Form
 
@@ -283,13 +286,13 @@ export function local<T extends JsonValue>(key: string, initial: T) {
 </select>
 ```
 
-There's a bit to unpack here; we have a lot of what appears to be meaningless complexity that manipulates such a simple form, but one simple form could easily turn into ten. State management is extremely important when handling user data to provide the best possible usability.
+There's a bit to unpack here; we have a lot of what appears to be meaningless complexity that manipulates such a simple form, but one simple form could easily turn into ten. On top of the modularity, state management is extremely important when handling user data to provide the best possible usability.
 
-We have a basic Svelte setup. We have a generic Svelte `index.js`, and an `App.svelte` file that looks quite similar to the setup in step 1. In addition to that, we've added three more components named `Form`, `Input`, and `Select`; `Input` and `Select` are near identical with the respect to the elements they render. We have two more JS files as well: `localStore` and `us_states`, with the latter being a self-explanatory array, and the prior being a modified variation of a Svelte writable store that utilizes localStorage.
+Here we have a basic Svelte setup. We have a generic Svelte `index.js`, and an `App.svelte` file that looks quite similar to the setup in step 1. In addition to that, we've added three more components named `Form`, `Input`, and `Select`; `Input` and `Select` are near identical with the respect to the elements they render. We have two more JS files as well: `localStore` and `us_states`, with the latter being a self-explanatory array, and the prior being a modified variation of a Svelte writable store that utilizes localStorage.
 
-The `Form` component takes a name prop, and it returns a store (via slot variable) to be used by its children. This is to isolate with varying amount of forms in a project as each will need a different name for localStorage purposes. To bypass localStorage, just don't provide a name and it will create a writable store.
+The `Form` component takes a name prop, and it returns a store (via slot variable) to be used by its children. This is to isolate the varying amount of forms in a project as each will need a different name for localStorage purposes. To bypass localStorage, just don't provide a name and it will create a writable store.
 
-The `Input` and `Select` components take three managed props, and the remaining props that their respective elements take (thank you $$restProps). The three props we want control of are: `store`, `name`, and `onInput/onChange`. The `store` prop is the `store` slot variable provided by the `Form` component. We steal `name` to use it in a custom input listener in order to preserve the value in our store. Finally, the `onInput/onChange` prop is to accomodate other potential (mostly visual) changes.
+The `Input` and `Select` components take two managed props, and the remaining props that their respective elements take (thank you $$restProps); we also dispatch events for `on:input` and `on:change` respectively. The two props we want control of are: `store`, and `name`. The `store` prop is the `store` slot variable provided by the `Form` component. We steal `name` to use it in a custom input listener in order to preserve the value in our store. Finally, those custom input listeners just update the values of the form elements in our store, and dispatch events to allow further control for each independent form.
 
 Time for the multi-step... step.
 
@@ -462,3 +465,5 @@ The new component: `Step`. With this component we pass a `name` prop, and the sl
 ## Conclusion
 
 Not pretty by any means, but it serves its purpose. What we have now is a form component that can be single-step or multi-step with the use of the `Step` component. This allows us to have many forms in a project that have the potential to be multi-step.
+
+# Thank you for reading, and have a good one.

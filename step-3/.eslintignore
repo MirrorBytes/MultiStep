@@ -1,5 +1,3 @@
-yarn.lock
-
+public/
 node_modules/
-build/
 eslint-plugin-svelte3/
