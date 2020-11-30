@@ -1,4 +1,4 @@
-# Multi-step forms w/ Svelte
+# Multi-step forms w/ Svelte & TypeScript
 
 ## Setup
 
@@ -461,6 +461,278 @@ export type JsonBool = { [key: string]: boolean };
 We have changed the `Form` component to manage the steps, like it manages its store. This means we have to pass another slot variable, `multi`, to the form's children, but this time the children consist of a new component. The `multi` variable is just a regular writable store with an object that will be a key with a boolean value to represent which step is the current. Once the `Form` component is mounted, we make the first step visisble.
 
 The new component: `Step`. With this component we pass a `name` prop, and the slot variable `multi` provided by the `Form` component. In the component, we add the `name` to the `multi` variable with a default value of `false` to indicate the step is not visible. Now with our steps isolated, we can create fluid and more elegant forms to any project.
+
+## Step 4: Testing Our Form
+
+Testing frontend components is a crucial step for larger projects; e2e is great and all, but it serves little purpose if your components are broken. Unit testing might save your day... or week.
+
+We're going to add some libraries to our previous step:
+
+```
+yarn add -D jest ts-jest @types/jest svelte-jester @testing-library/svelte @testing-library/user-event
+```
+
+You can pick your poison when it comes to testing libraries; Jest is not a requirement, but is recommended by the testing library. The user-event library is to add more realistic event functionality in our tests.
+
+Here's the Jest config (with TypeScript):
+
+```javascript
+module.exports = {
+  "transform": {
+    "^.+\\.svelte$": [
+      "svelte-jester",
+      {
+        "preprocess": true
+      }
+    ],
+    "^.+\\.ts$": "ts-jest"
+  },
+  "moduleFileExtensions": [
+    "js",
+    "ts",
+    "svelte"
+  ],
+};
+```
+
+Time to jump into the tests. First, I want to test the inputs to ensure they're functioning as expected, so here are the tests:
+
+- component rendered with name and placeholder
+- input function being called properly
+- store being updated on input
+
+### `input.spec.ts`
+```typescript
+import { get } from 'svelte/store';
+import { render } from '@testing-library/svelte';
+import userEvent from '@testing-library/user-event';
+
+import { local } from "../localStore";
+import type { JsonString } from "../types";
+
+import Input from '../components/Input.svelte';
+
+const store = local<JsonString>('test', {});
+
+test('component rendered with name and placeholder', async () => {
+  const { findByLabelText } = render(Input, { props: { store, name: 'test_input', placeholder: 'Test Input' } });
+
+  const input = await findByLabelText('Test Input');
+
+  expect(input.attributes.getNamedItem('name')?.value).toBe('test_input');
+});
+
+test('input function being called properly', async () => {
+  const { findByLabelText, component } = render(Input, { props: { store, name: 'test_input', placeholder: 'Test Input' } });
+
+  const input = await findByLabelText('Test Input');
+
+  const mock = jest.fn();
+  component.$on('input', mock);
+
+  userEvent.type(input, 'asdf');
+
+  expect(mock).toHaveBeenCalledTimes(4);
+});
+
+test('store being updated on input', async () => {
+  store.set({});
+
+  const { findByLabelText } = render(Input, { props: { store, name: 'test_input', placeholder: 'Test Input' } });
+
+  const input = await findByLabelText('Test Input');
+
+  userEvent.type(input, 'asdf');
+
+  expect(get(store)).toMatchObject({
+    test_input: 'asdf',
+  });
+});
+```
+
+Our `select.spec.ts` is extremely similar, but the final test requires us to use a faux component in order to test slots:
+
+### `select.spec.ts`
+```typescript
+...
+
+test('store being updated on blur', async () => {
+  const { findByLabelText } = render(FauxSelect, { props: { store, name: 'test_select', placeholder: 'Test Select' } });
+
+  const select = await findByLabelText('Test Select');
+
+  userEvent.selectOptions(select, ['NY']);
+  await fireEvent.blur(select);
+
+  expect(get(store)).toMatchObject({
+    test_select: 'NY',
+  });
+});
+```
+
+### `FauxSelect.svelte`
+```html
+<script lang="ts">
+  import type { Writable } from "svelte/store";
+
+  import type { JsonString } from "../../types";
+
+  export let store: Writable<JsonString>;
+  export let name: string;
+
+  import states from "../../us_states";
+
+  import Select from '../../components/Select.svelte';
+</script>
+
+<Select {store} {name} {...$$restProps}>
+  {#each states as state}
+    <option value={state}>{state}</option>
+  {/each}
+</Select>
+```
+
+Slots in Svelte have no programatic interface to work with either inside or outside. Hence a wrapper component that mimics an actual rendered `Select` component.
+
+Once we pass these basic tests, we can move on to the `Form` component to ensure that works properly with our recently tested inputs:
+
+- component renders with inputs
+- component submits without error
+
+### `form.spec.ts`
+```typescript
+import { get } from 'svelte/store';
+import { render } from '@testing-library/svelte';
+import userEvent from '@testing-library/user-event';
+
+import FauxForm from './utils/FauxForm.svelte';
+
+test('component renders with inputs', async () => {
+  const { findByTestId, getByPlaceholderText, getByText } = render(FauxForm, { props: { name: 'test_form' } });
+
+  const input = await findByTestId('test_input');
+
+  expect(input.attributes.getNamedItem('name')?.value).toBe('test_input');
+  expect(() => getByText('Prev')).toThrow();
+  expect(() => getByText('Next')).toThrow();
+  expect(() => getByPlaceholderText('Submit')).not.toThrow();
+});
+
+test('component submits without error', async () => {
+  const { findByTestId, findByPlaceholderText, component } = render(FauxForm, { props: { name: 'test_form' } });
+
+  const input = await findByTestId('test_input');
+  const submit = await findByPlaceholderText('Submit');
+
+  component.$on('submit', (ev) => {
+    const { store } = ev.detail;
+
+    expect(get(store)).toMatchObject({
+      test_input: 'asdf',
+    });
+  });
+
+  userEvent.type(input, 'asdf');
+  userEvent.click(submit);
+});
+```
+
+Just like with the `Select` component, we need to create a wrapper for the slots:
+
+### `FauxForm.svelte`
+```html
+<script lang="ts">
+  import Form from '../../components/Form.svelte';
+  import Input from '../../components/Input.svelte';
+
+  export let name: string;
+</script>
+
+<Form {name} let:store>
+  <Input {store} type="text" name="test_input" placeholder="Test Input" data-testid="test_input" />
+</Form>
+```
+
+Now that our `Form` component is tested, let's move on to testing steps:
+
+- component cycles through steps only showing current step's inputs
+
+### `step.spec.ts`
+```typescript
+import { tick } from 'svelte';
+import { render } from '@testing-library/svelte';
+import userEvent from '@testing-library/user-event';
+
+import FauxStepForm from './utils/FauxStepForm.svelte';
+
+test('component renders with inputs', async () => {
+  const { getByLabelText, getByPlaceholderText, getByText } = render(FauxStepForm, { props: { name: 'test_form' } });
+
+  expect(getByLabelText('Test Input').attributes.getNamedItem('name')?.value).toBe('test_input');
+  expect(() => getByLabelText('Test Input 2')).toThrow();
+  expect(() => getByLabelText('Test Input 3')).toThrow();
+
+  expect(() => getByText('Prev')).toThrow();
+  expect(() => getByText('Next')).not.toThrow();
+  expect(() => getByPlaceholderText('Submit')).toThrow();
+
+  userEvent.click(getByText('Next'));
+
+  await tick();
+
+  expect(() => getByLabelText('Test Input')).toThrow();
+  expect(getByLabelText('Test Input 2').attributes.getNamedItem('name')?.value).toBe('test_input_2');
+  expect(() => getByLabelText('Test Input 3')).toThrow();
+
+  expect(() => getByText('Prev')).not.toThrow();
+  expect(() => getByText('Next')).not.toThrow();
+  expect(() => getByPlaceholderText('Submit')).toThrow();
+
+  userEvent.click(getByText('Next'));
+
+  await tick();
+
+  expect(() => getByLabelText('Test Input')).toThrow();
+  expect(() => getByLabelText('Test Input 2')).toThrow();
+  expect(getByLabelText('Test Input 3').attributes.getNamedItem('name')?.value).toBe('test_input_3');
+
+  expect(() => getByText('Prev')).not.toThrow();
+  expect(() => getByText('Next')).toThrow();
+  expect(() => getByPlaceholderText('Submit')).not.toThrow();
+});
+```
+
+There's a lot of redundancy here, but it's all necessary to achieve proper testing. We introduce Svelte's built-in `tick` function in order to allow the render engine to update after our `click` inputs.
+
+Again, we need a wrapper:
+
+```html
+<script lang="ts">
+  import Form from '../../components/Form.svelte';
+  import Step from '../../components/Step.svelte';
+  import Input from '../../components/Input.svelte';
+
+  export let name: string;
+</script>
+
+<Form {name} let:store let:multi>
+  <Step name="Test Step 1" {multi}>
+    <Input {store} type="text" name="test_input" placeholder="Test Input" />
+  </Step>
+
+  <Step name="Test Step 2" {multi}>
+    <Input {store} type="text" name="test_input_2" placeholder="Test Input 2" />
+  </Step>
+
+  <Step name="Test Step 3" {multi}>
+    <Input {store} type="text" name="test_input_3" placeholder="Test Input 3" />
+  </Step>
+</Form>
+```
+
+That's pretty much it for testing this simple project. Of course, there's plenty that can be done in order to make neat of it, but for now I think it's alright.
+
+To make note, there are a few changes made from the previous step, they are intentional. These changes are in fact necessary, and would not have been easily discoverable without testing when it comes to larger projects.
 
 ## Conclusion
 
